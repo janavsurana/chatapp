@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat App - Login</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+    
+    .auth-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .signup-content {
+      max-height: 100%;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="wordmark">Chat</div>
+      
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Login</button>
+        <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- LOGIN TAB -->
+      <div id="login-tab">
+        <label>Username</label>
+        <input type="text" id="login-username" placeholder="Enter your username">
+        
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Enter your password">
+        
+        <button class="primary" onclick="handleLogin()">Login</button>
+        <div class="error-text" id="login-error"></div>
+      </div>
+
+      <!-- SIGNUP TAB -->
+      <div id="signup-tab" style="display:none;">
+        <div class="signup-content">
+          <label>Username</label>
+          <input type="text" id="signup-username" placeholder="3-20 characters, letters/numbers/underscore">
+          
+          <label>Password</label>
+          <input type="password" id="signup-password" placeholder="At least 8 characters">
+          
+          <div class="checkbox-row">
+            <input type="checkbox" id="age-confirm">
+            <label style="margin:0; font-weight: 400; text-transform: none; letter-spacing: normal; font-size: 13px;">I confirm I am 18 years or older</label>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="legal-confirm">
+            <label style="margin:0; font-weight: 400; text-transform: none; letter-spacing: normal; font-size: 13px;">I have read and agree to the <a href="/terms.html" target="_blank" style="color: var(--accent-primary); text-decoration: underline;">Terms</a>, <a href="/privacy.html" target="_blank" style="color: var(--accent-primary); text-decoration: underline;">Privacy</a>, <a href="/refund.html" target="_blank" style="color: var(--accent-primary); text-decoration: underline;">Refund</a>, and <a href="/about.html" target="_blank" style="color: var(--accent-primary); text-decoration: underline;">About</a></label>
+          </div>
+          
+          <button class="primary" onclick="handleSignup()" style="margin-top: 20px;">Create Account</button>
+          <div class="error-text" id="signup-error"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align: center; padding: 20px; background: var(--bg-surface); border-top: 1px solid var(--border-dark); font-size: 12px; color: var(--text-muted);">
+    <div style="margin-bottom: 10px;">
+      <a href="/terms.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Terms</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/privacy.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Privacy</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/refund.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Refund</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/about.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">About</a>
+    </div>
+    <span>&copy; 2026 Chat. All rights reserved.</span>
+  </div>
+
+  <script>
+    // Switch between Login and Signup tabs
+    function switchTab(tab) {
+      const loginTab = document.getElementById('login-tab');
+      const signupTab = document.getElementById('signup-tab');
+      const tabs = document.querySelectorAll('.tab');
+      
+      if (tab === 'login') {
+        loginTab.style.display = 'block';
+        signupTab.style.display = 'none';
+      } else {
+        loginTab.style.display = 'none';
+        signupTab.style.display = 'block';
+      }
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Handle Login
+    async function handleLogin() {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+      
+      errorDiv.textContent = '';
+
+      if (!username) {
+        errorDiv.textContent = 'Enter your username.';
+        return;
+      }
+
+      if (!password) {
+        errorDiv.textContent = 'Enter your password.';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          errorDiv.textContent = data.error || 'Login failed.';
+          return;
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('username', data.username);
+        localStorage.setItem('csrfToken', data.csrfToken);
+
+        window.location.href = '/chat.html';
+
+      } catch (err) {
+        console.error('Login error:', err);
+        errorDiv.textContent = 'Connection error. Try again.';
+      }
+    }
+
+    // Handle Signup
+    async function handleSignup() {
+      const username = document.getElementById('signup-username').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const ageConfirmed = document.getElementById('age-confirm').checked;
+      const legalConfirmed = document.getElementById('legal-confirm').checked;
+      const errorDiv = document.getElementById('signup-error');
+      
+      errorDiv.textContent = '';
+
+      if (!username) {
+        errorDiv.textContent = 'Enter a username.';
+        return;
+      }
+
+      if (!password) {
+        errorDiv.textContent = 'Enter a password.';
+        return;
+      }
+
+      if (!ageConfirmed) {
+        errorDiv.textContent = 'You must confirm you are 18 or older.';
+        return;
+      }
+
+      if (!legalConfirmed) {
+        errorDiv.textContent = 'You must agree to Terms, Privacy, Refund, and About.';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+            ageConfirmed: ageConfirmed
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          errorDiv.textContent = data.error || 'Signup failed.';
+          return;
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('username', data.username);
+        localStorage.setItem('csrfToken', data.csrfToken);
+
+        window.location.href = '/chat.html';
+
+      } catch (err) {
+        console.error('Signup error:', err);
+        errorDiv.textContent = 'Connection error. Try again.';
+      }
+    }
+
+    // Allow Enter key to submit
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('login-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleLogin();
+      });
+      
+      document.getElementById('signup-password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') handleSignup();
+      });
+    });
+  </script>
+</body>
+</html>

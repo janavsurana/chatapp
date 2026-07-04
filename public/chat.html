@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="chat-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="wordmark">Chat</div>
+      
+      <ul class="room-list" id="room-list">
+        <!-- Rooms loaded here -->
+      </ul>
+      
+      <div class="sidebar-footer">
+        <div class="status">
+          <strong id="username-display">User</strong>
+        </div>
+        <button onclick="handleLogout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- CHAT MAIN -->
+    <div class="chat-main">
+      <div class="chat-header" id="room-name">Select a room</div>
+      <div class="banner" id="banner"></div>
+      <div class="message-list" id="message-list"></div>
+      
+      <div class="composer">
+        <input 
+          type="text" 
+          id="message-input" 
+          placeholder="Type a message..." 
+          onkeypress="handleKeypress(event)"
+        >
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER (INSIDE, NOT FLOATING) -->
+  <div style="text-align: center; padding: 20px; background: var(--bg-surface); border-top: 1px solid var(--border-dark); font-size: 12px; color: var(--text-muted);">
+    <div style="margin-bottom: 10px;">
+      <a href="/terms.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Terms</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/privacy.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Privacy</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/refund.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Refund</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/about.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">About</a>
+    </div>
+    <span>&copy; 2026 Chat. All rights reserved.</span>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Get auth data from localStorage
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    const csrfToken = localStorage.getItem('csrfToken');
+    
+    let currentRoom = null;
+    let socket = null;
+
+    // Redirect to login if not authenticated
+    if (!token || !username) {
+      window.location.href = '/index.html';
+    }
+
+    // Display username
+    document.getElementById('username-display').textContent = username;
+
+    // Initialize Socket.io connection
+    socket = io({
+      auth: { 
+        token: token 
+      }
+    });
+
+    // Socket event: connected
+    socket.on('connect', () => {
+      console.log('Socket connected successfully');
+      loadRooms();
+    });
+
+    // Socket event: receive room history
+    socket.on('room_history', (messages) => {
+      const messageList = document.getElementById('message-list');
+      messageList.innerHTML = '';
+      
+      if (messages && messages.length > 0) {
+        messages.forEach(msg => {
+          addMessageToUI(msg.username, msg.content, msg.created_at);
+        });
+      }
+    });
+
+    // Socket event: receive new message
+    socket.on('new_message', (msg) => {
+      addMessageToUI(msg.username, msg.content, msg.created_at);
+    });
+
+    // Socket event: error
+    socket.on('chat_error', (error) => {
+      showBanner(error);
+    });
+
+    // Socket event: disconnected
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    // Load all rooms
+    async function loadRooms() {
+      try {
+        const response = await fetch('/api/rooms', {
+          method: 'GET',
+          headers: {
+            'x-auth-token': token
+          }
+        });
+
+        if (!response.ok) {
+          console.error('Failed to load rooms');
+          return;
+        }
+
+        const rooms = await response.json();
+        const roomList = document.getElementById('room-list');
+        roomList.innerHTML = '';
+
+        rooms.forEach(room => {
+          const li = document.createElement('li');
+          li.textContent = room.name;
+          li.onclick = () => joinRoom(room.slug, room.name, li);
+          roomList.appendChild(li);
+        });
+
+      } catch (err) {
+        console.error('Error loading rooms:', err);
+        showBanner('Failed to load rooms');
+      }
+    }
+
+    // Join a room
+    function joinRoom(slug, name, element) {
+      currentRoom = slug;
+      
+      // Remove active class from all rooms
+      document.querySelectorAll('.room-list li').forEach(li => {
+        li.classList.remove('active');
+      });
+      
+      // Add active class to clicked room
+      if (element) {
+        element.classList.add('active');
+      }
+      
+      // Update header
+      document.getElementById('room-name').textContent = name;
+      
+      // Clear messages
+      document.getElementById('message-list').innerHTML = '';
+      
+      // Emit join room event
+      socket.emit('join_room', slug);
+    }
+
+    // Add message to UI (SAFE - uses textContent)
+    function addMessageToUI(user, content, time) {
+      const messageList = document.getElementById('message-list');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message';
+      
+      // Format time
+      const timeStr = new Date(time).toLocaleTimeString();
+      
+      // Create meta div (username + time)
+      const metaDiv = document.createElement('div');
+      metaDiv.className = 'meta';
+      
+      const userSpan = document.createElement('span');
+      userSpan.className = 'user';
+      userSpan.textContent = user;  // SAFE - text only
+      
+      const timeSpan = document.createElement('span');
+      timeSpan.textContent = ' ' + timeStr;  // SAFE - text only
+      
+      metaDiv.appendChild(userSpan);
+      metaDiv.appendChild(timeSpan);
+      
+      // Create body div (message content)
+      const bodyDiv = document.createElement('div');
+      bodyDiv.className = 'body';
+      bodyDiv.textContent = content;  // SAFE - text only, no HTML execution
+      
+      // Assemble message
+      messageDiv.appendChild(metaDiv);
+      messageDiv.appendChild(bodyDiv);
+      messageList.appendChild(messageDiv);
+      
+      // Auto-scroll to bottom
+      messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    // Send message
+    function sendMessage() {
+      if (!currentRoom) {
+        showBanner('Select a room first');
+        return;
+      }
+      
+      const input = document.getElementById('message-input');
+      const content = input.value.trim();
+      
+      if (!content) {
+        return;
+      }
+      
+      // Emit message event
+      socket.emit('send_message', { 
+        roomSlug: currentRoom, 
+        content: content 
+      });
+      
+      // Clear input
+      input.value = '';
+      input.focus();
+    }
+
+    // Handle Enter key
+    function handleKeypress(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // Show banner message
+    function showBanner(message) {
+      const banner = document.getElementById('banner');
+      banner.textContent = message;
+      banner.classList.add('show');
+      
+      setTimeout(() => {
+        banner.classList.remove('show');
+      }, 4000);
+    }
+
+    // Logout function (with CSRF token)
+    async function handleLogout() {
+      try {
+        const response = await fetch('/api/logout', {
+          method: 'POST',
+          headers: {
+            'x-auth-token': token,
+            'x-csrf-token': csrfToken
+          }
+        });
+
+        // Clear storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('csrfToken');
+        
+        // Redirect to login
+        window.location.href = '/index.html';
+
+      } catch (err) {
+        console.error('Logout error:', err);
+        
+        // Still clear storage and redirect on error
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('csrfToken');
+        window.location.href = '/index.html';
+      }
+    }
+
+    // Load rooms when page loads
+    loadRooms();
+  </script>
+</body>
+</html>
