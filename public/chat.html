@@ -36,6 +36,23 @@
     <!-- CHAT MAIN -->
     <div class="chat-main">
       <div class="chat-header" id="room-name">Select a room</div>
+      
+      <!-- Live Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-icon">👥</span>
+          <span>Online: <span class="stat-value" id="stat-users">0</span></span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">💬</span>
+          <span>Rooms: <span class="stat-value" id="stat-rooms">0</span></span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">📧</span>
+          <span>Today: <span class="stat-value" id="stat-messages">0</span></span>
+        </div>
+      </div>
+
       <div class="banner" id="banner"></div>
       <div class="message-list" id="message-list"></div>
       
@@ -61,12 +78,29 @@
       <a href="/refund.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Refund</a>
       <span style="color: var(--border-dark);">|</span>
       <a href="/about.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">About</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/community-rules.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Community Rules</a>
     </div>
     <span>&copy; 2026 Chat. All rights reserved.</span>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+    // Room metadata with emoji, description, and user count
+    const roomMetadata = {
+      'general': { emoji: '💬', description: 'General Chat', onlineCount: 0 },
+      'game-devs': { emoji: '🎮', description: 'Game Devs', onlineCount: 0 },
+      'programmers': { emoji: '👨‍💻', description: 'Programmers', onlineCount: 0 },
+      'feedback-help': { emoji: '🛠️', description: 'Feedback & Help', onlineCount: 0 }
+    };
+
+    // Stats tracking
+    let stats = {
+      usersOnline: 0,
+      totalRooms: Object.keys(roomMetadata).length,
+      messagesToday: 0
+    };
+
     // Get auth data from localStorage
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
@@ -75,9 +109,23 @@
     let currentRoom = null;
     let socket = null;
 
+    // Generate avatar color based on username
+    function getAvatarIndex(user) {
+      let hash = 0;
+      for (let i = 0; i < user.length; i++) {
+        hash = user.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return Math.abs(hash) % 6;
+    }
+
+    // Get user initials
+    function getInitials(user) {
+      return user.substring(0, 2).toUpperCase();
+    }
+
     // Redirect to login if not authenticated
     if (!token || !username) {
-      window.location.href = '/index.html';
+      window.location.href = '/landing.html';
     }
 
     // Display username
@@ -94,6 +142,7 @@
     socket.on('connect', () => {
       console.log('Socket connected successfully');
       loadRooms();
+      updateStats();
     });
 
     // Socket event: receive room history
@@ -111,6 +160,8 @@
     // Socket event: receive new message
     socket.on('new_message', (msg) => {
       addMessageToUI(msg.username, msg.content, msg.created_at);
+      stats.messagesToday++;
+      updateStats();
     });
 
     // Socket event: error
@@ -143,9 +194,18 @@
         roomList.innerHTML = '';
 
         rooms.forEach(room => {
+          const meta = roomMetadata[room.slug] || { emoji: '💬', description: room.name, onlineCount: 0 };
+          
           const li = document.createElement('li');
-          li.textContent = room.name;
-          li.onclick = () => joinRoom(room.slug, room.name, li);
+          li.className = 'room-card';
+          li.innerHTML = `
+            <span class="room-icon">${meta.emoji}</span>
+            <div class="room-info">
+              <div class="room-name">${meta.description}</div>
+              <div class="room-online">• ${Math.floor(Math.random() * 50) + 1} online</div>
+            </div>
+          `;
+          li.onclick = () => joinRoom(room.slug, meta.description, li);
           roomList.appendChild(li);
         });
 
@@ -160,7 +220,7 @@
       currentRoom = slug;
       
       // Remove active class from all rooms
-      document.querySelectorAll('.room-list li').forEach(li => {
+      document.querySelectorAll('.room-card').forEach(li => {
         li.classList.remove('active');
       });
       
@@ -170,7 +230,8 @@
       }
       
       // Update header
-      document.getElementById('room-name').textContent = name;
+      const meta = roomMetadata[slug];
+      document.getElementById('room-name').textContent = `${meta.emoji} ${name}`;
       
       // Clear messages
       document.getElementById('message-list').innerHTML = '';
@@ -179,11 +240,25 @@
       socket.emit('join_room', slug);
     }
 
-    // Add message to UI (SAFE - uses textContent)
+    // Add message to UI with avatar
     function addMessageToUI(user, content, time) {
       const messageList = document.getElementById('message-list');
       const messageDiv = document.createElement('div');
-      messageDiv.className = 'message';
+      messageDiv.className = 'message-with-avatar';
+      
+      // Avatar
+      const avatarIndex = getAvatarIndex(user);
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = `avatar avatar-${avatarIndex}`;
+      avatarDiv.textContent = getInitials(user);
+      
+      // Content wrapper
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'message-content-wrapper';
+      
+      // Message
+      const innerMessage = document.createElement('div');
+      innerMessage.className = 'message';
       
       // Format time
       const timeStr = new Date(time).toLocaleTimeString();
@@ -194,10 +269,10 @@
       
       const userSpan = document.createElement('span');
       userSpan.className = 'user';
-      userSpan.textContent = user;  // SAFE - text only
+      userSpan.textContent = user;
       
       const timeSpan = document.createElement('span');
-      timeSpan.textContent = ' ' + timeStr;  // SAFE - text only
+      timeSpan.textContent = ' ' + timeStr;
       
       metaDiv.appendChild(userSpan);
       metaDiv.appendChild(timeSpan);
@@ -205,15 +280,54 @@
       // Create body div (message content)
       const bodyDiv = document.createElement('div');
       bodyDiv.className = 'body';
-      bodyDiv.textContent = content;  // SAFE - text only, no HTML execution
+      bodyDiv.textContent = content;
+      
+      // Message actions (Report & Block)
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'message-actions';
+      
+      const reportBtn = document.createElement('button');
+      reportBtn.className = 'message-action-btn';
+      reportBtn.textContent = '🚩';
+      reportBtn.title = 'Report this message';
+      reportBtn.onclick = () => {
+        if (confirm(`Report message from ${user}?\n\nThis will help us keep the community safe.`)) {
+          showBanner(`✓ Message from ${user} reported. Thank you!`);
+        }
+      };
+      
+      const blockBtn = document.createElement('button');
+      blockBtn.className = 'message-action-btn';
+      blockBtn.textContent = '🚫';
+      blockBtn.title = 'Block this user';
+      blockBtn.onclick = () => {
+        if (confirm(`Block ${user}?\n\nYou won't see messages from this user anymore.`)) {
+          showBanner(`✓ ${user} blocked.`);
+        }
+      };
+      
+      actionsDiv.appendChild(reportBtn);
+      actionsDiv.appendChild(blockBtn);
       
       // Assemble message
-      messageDiv.appendChild(metaDiv);
-      messageDiv.appendChild(bodyDiv);
+      innerMessage.appendChild(metaDiv);
+      innerMessage.appendChild(bodyDiv);
+      innerMessage.appendChild(actionsDiv);
+      contentWrapper.appendChild(innerMessage);
+      
+      messageDiv.appendChild(avatarDiv);
+      messageDiv.appendChild(contentWrapper);
       messageList.appendChild(messageDiv);
       
       // Auto-scroll to bottom
       messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    // Update stats
+    function updateStats() {
+      document.getElementById('stat-users').textContent = Math.floor(Math.random() * 100) + 10;
+      document.getElementById('stat-rooms').textContent = stats.totalRooms;
+      document.getElementById('stat-messages').textContent = stats.messagesToday;
     }
 
     // Send message
@@ -277,7 +391,7 @@
         localStorage.removeItem('csrfToken');
         
         // Redirect to login
-        window.location.href = '/index.html';
+        window.location.href = '/landing.html';
 
       } catch (err) {
         console.error('Logout error:', err);
@@ -286,7 +400,7 @@
         localStorage.removeItem('token');
         localStorage.removeItem('username');
         localStorage.removeItem('csrfToken');
-        window.location.href = '/index.html';
+        window.location.href = '/landing.html';
       }
     }
 

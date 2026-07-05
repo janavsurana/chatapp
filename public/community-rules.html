@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Community Rules - Chat</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9RVBWDBRHE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-9RVBWDBRHE');
+  </script>
+  <style>
+    .rules-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .rules-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .rules-title {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 12px;
+    }
+
+    .rules-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .rules-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .rule-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-content {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .rule-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .rule-list li {
+      padding: 8px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .rule-list li::before {
+      content: "✓";
+      color: #4ade80;
+      font-weight: bold;
+      min-width: 20px;
+    }
+
+    .rule-list.dont li::before {
+      content: "✗";
+      color: var(--danger);
+    }
+
+    .consequences {
+      background: rgba(239, 68, 68, 0.08);
+      border-left: 4px solid var(--danger);
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 30px;
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .footer-rules {
+      text-align: center;
+      padding: 40px 20px;
+      border-top: 1px solid var(--border-dark);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .footer-rules a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      margin: 0 8px;
+    }
+
+    .footer-rules a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .rules-container {
+        padding: 30px 16px;
+      }
+
+      .rules-title {
+        font-size: 28px;
+      }
+
+      .rules-section {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="rules-container">
+    <a href="/landing.html" class="back-link">← Back to Home</a>
+
+    <div class="rules-header">
+      <h1 class="rules-title">🏘️ Community Rules</h1>
+      <p class="rules-subtitle">
+        Chat is a community of developers, gamers, and creators. To keep it safe and welcoming for everyone, please follow these rules.
+      </p>
+    </div>
+
+    <!-- Rule 1: No Spam -->
+    <div class="rules-section">
+      <div class="section-title">
+        <span class="rule-icon">📢</span>
+        No Spam
+      </div>
+      <div class="section-content">
+        <ul class="rule-list">
+          <li>No repetitive messages or flooding the chat</li>
+          <li>No mass promotional content or unsolicited advertising</li>
+          <li>No botting, scripting, or automated spam</li>
+          <li>No excessive caps lock or symbols</li>
+        </ul>
+      </div>
+      <div class="consequences">
+        ⚠️ First offense: Warning | Repeat: 24-hour mute | Persistent: Ban
+      </div>
+    </div>
+
+    <!-- Rule 2: No Scams -->
+    <div class="rules-section">
+      <div class="section-title">
+        <span class="rule-icon">🚫</span>
+        No Scams or Fraud
+      </div>
+      <div class="section-content">
+        <ul class="rule-list">
+          <li>No phishing, catfishing, or identity theft</li>
+          <li>No fake giveaways or pump-and-dump schemes</li>
+          <li>No selling counterfeit or stolen items</li>
+          <li>No financial scams or MLM recruitment</li>
+        </ul>
+      </div>
+      <div class="consequences">
+        ⚠️ First offense: Immediate 30-day ban | Repeat: Permanent ban + potential legal action
+      </div>
+    </div>
+
+    <!-- Rule 3: No Hate Speech -->
+    <div class="rules-section">
+      <div class="section-title">
+        <span class="rule-icon">❤️</span>
+        Respect & Inclusion
+      </div>
+      <div class="section-content">
+        <ul class="rule-list">
+          <li>No slurs, hate speech, or discrimination</li>
+          <li>No racism, sexism, homophobia, or transphobia</li>
+          <li>No harassment, bullying, or personal attacks</li>
+          <li>No doxxing or sharing private information</li>
+        </ul>
+      </div>
+      <div class="consequences">
+        ⚠️ First offense: 7-day ban | Repeat: 30-day ban | Persistent: Permanent ban
+      </div>
+    </div>
+
+    <!-- Rule 4: Content Policy -->
+    <div class="rules-section">
+      <div class="section-title">
+        <span class="rule-icon">🔞</span>
+        Content & Appropriateness
+      </div>
+      <div class="section-content">
+        <ul class="rule-list">
+          <li>Chat is 18+ only. No exceptions.</li>
+          <li>No explicit sexual content, gore, or violence</li>
+          <li>No child safety concerns or inappropriate content involving minors</li>
+          <li>No illegal content (piracy, drugs, weapons)</li>
+        </ul>
+      </div>
+      <div class="consequences">
+        ⚠️ First offense: Immediate ban + account deletion + potential report to authorities
+      </div>
+    </div>
+
+    <!-- Rule 5: Marketplace Conduct -->
+    <div class="rules-section">
+      <div class="section-title">
+        <span class="rule-icon">🏪</span>
+        Marketplace Ethics (Coming Soon)
+      </div>
+      <div class="section-content">
+        <ul class="rule-list">
+          <li>Be honest about product descriptions and quality</li>
+          <li>No inflated prices or artificial scarcity</li>
+          <li>Deliver digital assets as promised</li>
+          <li>Honor refund policies and disputes</li>
+        </ul>
+      </div>
+      <div class="consequences">
+        ⚠️ Repeated violations: Seller badge removed + account suspension
+      </div>
+    </div>
+
+    <!-- Rule 6: Technical Rules -->
+    <div class="rules-section">
+      <div class="section-title">
+        <span class="rule-icon">🔧</span>
+        Platform Integrity
+      </div>
+      <div class="section-content">
+        <ul class="rule-list">
+          <li>No hacking, exploiting bugs, or DDoS attempts</li>
+          <li>No account farming or multi-accounting for manipulation</li>
+          <li>No scraping user data or API abuse</li>
+          <li>Report security vulnerabilities responsibly</li>
+        </ul>
+      </div>
+      <div class="consequences">
+        ⚠️ First offense: Account termination | Legal action for severe breaches
+      </div>
+    </div>
+
+    <!-- Rule 7: Do's -->
+    <div class="rules-section">
+      <div class="section-title">
+        <span class="rule-icon">✅</span>
+        What We Love to See
+      </div>
+      <div class="section-content">
+        <ul class="rule-list dont" style="list-style: none; padding: 0;">
+          <li style="color: #4ade80;">Share your projects and get feedback</li>
+          <li style="color: #4ade80;">Help others solve problems</li>
+          <li style="color: #4ade80;">Collaborate and make friends</li>
+          <li style="color: #4ade80;">Respect different opinions and backgrounds</li>
+          <li style="color: #4ade80;">Report rule violations instead of taking action yourself</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Enforcement -->
+    <div class="rules-section" style="border-left: 4px solid var(--accent-primary);">
+      <div class="section-title">
+        <span class="rule-icon">⚖️</span>
+        Enforcement & Appeals
+      </div>
+      <div class="section-content">
+        <p style="margin-bottom: 12px;">
+          Our moderation team reviews reports and enforces rules fairly. We believe in second chances but take safety seriously.
+        </p>
+        <p>
+          <strong>If you think a moderation decision is unfair:</strong> Reply to the notification with your appeal within 7 days. We'll review it within 48 hours.
+        </p>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="rules-section" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2);">
+      <div class="section-title">
+        <span class="rule-icon">❓</span>
+        Questions?
+      </div>
+      <div class="section-content">
+        <p>
+          Check our FAQ or reach out in the <strong>Feedback & Help</strong> room. Our community managers are here to help!
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-rules">
+    <a href="/landing.html">Home</a>
+    <span>|</span>
+    <a href="/terms.html">Terms</a>
+    <span>|</span>
+    <a href="/privacy.html">Privacy</a>
+    <span>|</span>
+    <a href="/refund.html">Refund</a>
+    <span>|</span>
+    <a href="/about.html">About</a>
+    <br><br>
+    &copy; 2026 Chat. All rights reserved.
+  </div>
+</body>
+</html>

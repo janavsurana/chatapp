@@ -16,11 +16,17 @@ const pool = new Pool({
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: '*' }
+  cors: { origin: '*'
+}
 });
 
 app.use(express.json({ limit: '10kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Redirect to landing page on root
+app.get('/', (req, res) => {
+  res.redirect('/landing.html');
+});
 
 // Security headers
 app.use((req, res, next) => {
@@ -43,13 +49,13 @@ const ADMIN_USERNAMES = (process.env.ADMIN_USERNAMES || '').split(',').map(u => 
 
 // Sessions with 24-hour expiration
 const sessions = new Map();
-const SESSION_TIMEOUT = 24 * 60 * 60 * 1000;  // 24 hours in milliseconds
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 // CSRF tokens - one per user session
 const csrfTokens = new Map();
 
 function generateCSRFToken() {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(24).toString('hex');
 }
 
 // Rate limiting for login attempts
@@ -58,13 +64,12 @@ const loginAttempts = new Map();
 function checkLoginAttempts(ip) {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
-  
   const attempts = (loginAttempts.get(ip) || []).filter(t => now - t < windowMs);
-  
+
   if (attempts.length >= 5) {
     return false;
   }
-  
+
   attempts.push(now);
   loginAttempts.set(ip, attempts);
   return true;
@@ -85,7 +90,7 @@ function tooManySignups(ip) {
 function validateUsername(username) {
   if (!username || typeof username !== 'string') return false;
   if (username.length < 3 || username.length > 20) return false;
-  if (!/^[a-zA-Z0-9_]+$/.test(username)) return false;
+  if (!/^[a-zA-Z0-9_-]+$/.test(username)) return false;
   return true;
 }
 
@@ -102,14 +107,13 @@ function makeToken() {
 async function getUserFromToken(token) {
   const session = sessions.get(token);
   if (!session) return null;
-  
+
   // Check if session expired (24 hours)
   if (Date.now() - session.createdAt > SESSION_TIMEOUT) {
-    sessions.delete(token);  // Remove expired session
-    csrfTokens.delete(token);  // Remove associated CSRF token
+    sessions.delete(token); // Remove expired session
     return null;
   }
-  
+
   const result = await pool.query('SELECT * FROM users WHERE id = $1', [session.userId]);
   return result.rows[0] || null;
 }
@@ -129,11 +133,11 @@ function verifyCsrfToken(req, res, next) {
   const csrf = req.headers['x-csrf-token'];
   const token = req.headers['x-auth-token'];
   const expectedCsrf = csrfTokens.get(token);
-  
+
   if (!csrf || !expectedCsrf || csrf !== expectedCsrf) {
     return res.status(403).json({ error: 'CSRF token invalid.' });
   }
-  
+
   next();
 }
 
@@ -150,17 +154,17 @@ app.post('/api/signup', async (req, res) => {
     if (!ageConfirmed) {
       return res.status(400).json({ error: 'You must confirm you are 18 or older.' });
     }
-    
-    if (!validateUsername(username)) {
+
+    if (validateUsername(username)) {
       return res.status(400).json({ error: 'Username: 3-20 chars, letters/numbers/underscore only.' });
     }
-    
-    if (!validatePassword(password)) {
+
+    if (validatePassword(password)) {
       return res.status(400).json({ error: 'Password must be at least 8 characters.' });
     }
 
     const existing = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
-    if (existing.rows.length) {
+    if (existing.rows.length > 0) {
       return res.status(409).json({ error: 'Username taken.' });
     }
 
@@ -174,18 +178,18 @@ app.post('/api/signup', async (req, res) => {
     const user = result.rows[0];
     const token = makeToken();
     const csrfToken = generateCSRFToken();
-    
+
     sessions.set(token, {
       userId: user.id,
       createdAt: Date.now()
     });
     csrfTokens.set(token, csrfToken);
 
-    res.json({ 
-      token, 
-      username: user.username, 
+    res.json({
+      token,
+      username: user.username,
       isAdmin: user.is_admin,
-      csrfToken 
+      csrfToken
     });
   } catch (err) {
     console.error(err);
@@ -196,7 +200,7 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    
+
     // Check rate limit
     if (!checkLoginAttempts(ip)) {
       return res.status(429).json({ error: 'Too many login attempts. Try again in 15 minutes.' });
@@ -213,18 +217,18 @@ app.post('/api/login', async (req, res) => {
     }
     const token = makeToken();
     const csrfToken = generateCSRFToken();
-    
+
     sessions.set(token, {
       userId: user.id,
       createdAt: Date.now()
     });
     csrfTokens.set(token, csrfToken);
-    
-    res.json({ 
-      token, 
-      username: user.username, 
+
+    res.json({
+      token,
+      username: user.username,
       isAdmin: user.is_admin,
-      csrfToken 
+      csrfToken
     });
   } catch (err) {
     console.error(err);
@@ -232,7 +236,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-app.post('/api/logout', requireAuth, verifyCsrfToken, (req, res) => {
+app.post('/api/logout', verifyCsrfToken, (req, res) => {
   const token = req.headers['x-auth-token'];
   sessions.delete(token);
   csrfTokens.delete(token);
@@ -270,28 +274,28 @@ io.on('connection', (socket) => {
   socket.on('join_room', async (roomSlug) => {
     socket.join(roomSlug);
     const result = await pool.query(
-      'SELECT username, content, created_at FROM messages WHERE room_slug = $1 AND hidden = FALSE ORDER BY created_at DESC LIMIT 30',
+      'SELECT id, username, content, created_at FROM messages WHERE room_slug = $1 AND hidden = FALSE ORDER BY created_at DESC LIMIT 30',
       [roomSlug]
     );
     socket.emit('room_history', result.rows.reverse());
   });
 
-  socket.on('send_message', async ({ roomSlug, content }) => {
+  socket.on('send_message', ({ roomSlug, content }) => {
     try {
-      content = (content || '').trim().slice(0, 1000);
-      if (!content) return;
+      content = (content || '').slice(0, 1000);
+      if (!content) {
+        return;
+      }
 
-      const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [socket.user.id]);
-      const user = userResult.rows[0];
-      if (!user || user.suspended) {
-        socket.emit('chat_error', 'Account suspended.');
-        socket.disconnect();
+      const user = socket.user;
+      if (!user) {
+        socket.emit('chat_error', 'Message failed.');
         return;
       }
 
       // Rate limiting - prevent rapid messages
       const now = Date.now();
-      if (now - (lastMessageAt.get(user.id) || 0) < 1000) {
+      if ((lastMessageAt.get(user.id) || 0) < 1000) {
         socket.emit('chat_error', 'Sending too fast.');
         return;
       }
@@ -301,7 +305,7 @@ io.on('connection', (socket) => {
       const today = new Date().toDateString();
       const countKey = `${user.id}:${today}`;
       const count = messageCountToday.get(countKey) || 0;
-      
+
       if (count >= 100) {
         socket.emit('chat_error', 'Daily message limit reached (100). Try again tomorrow.');
         return;

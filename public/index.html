@@ -45,12 +45,57 @@
       max-height: 100%;
       overflow-y: auto;
     }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 28px;
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .coming-soon-section {
+      background: rgba(37, 99, 235, 0.08);
+      border: 1px solid rgba(37, 99, 235, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 24px;
+      font-size: 12px;
+    }
+
+    .coming-soon-title {
+      color: var(--accent-primary);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .coming-soon-items {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .coming-soon-item {
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 0;
+    }
+
+    .coming-soon-item::before {
+      content: "🔄 ";
+      margin-right: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="auth-wrap">
     <div class="auth-card">
       <div class="wordmark">Chat</div>
+      
+      <div class="tagline">
+        💬 Anonymous community for gamers, programmers, and developers.
+      </div>
       
       <div class="tabs">
         <button class="tab active" onclick="switchTab('login')">Login</button>
@@ -90,7 +135,22 @@
           
           <button class="primary" onclick="handleSignup()" style="margin-top: 20px;">Create Account</button>
           <div class="error-text" id="signup-error"></div>
+
+          <div class="coming-soon-section">
+            <div class="coming-soon-title">Coming Soon to Chat 🚀</div>
+            <div class="coming-soon-items">
+              <div class="coming-soon-item">Marketplace</div>
+              <div class="coming-soon-item">Private Messages</div>
+              <div class="coming-soon-item">Verified Sellers</div>
+              <div class="coming-soon-item">Digital Asset Store</div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Coming Soon section in login tab too -->
+      <div style="margin-top: 20px;">
+        <a href="/landing.html" style="color: var(--accent-primary); text-decoration: none; font-size: 12px;">← Back to Home</a>
       </div>
     </div>
   </div>
@@ -105,6 +165,8 @@
       <a href="/refund.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Refund</a>
       <span style="color: var(--border-dark);">|</span>
       <a href="/about.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">About</a>
+      <span style="color: var(--border-dark);">|</span>
+      <a href="/community-rules.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 10px;">Community Rules</a>
     </div>
     <span>&copy; 2026 Chat. All rights reserved.</span>
   </div>
