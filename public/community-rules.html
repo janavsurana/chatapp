@@ -14,6 +14,10 @@
     gtag('config', 'G-9RVBWDBRHE');
   </script>
   <style>
+    body {
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+    }
+
     .rules-container {
       max-width: 800px;
       margin: 0 auto;
@@ -29,20 +33,20 @@
     .rules-title {
       font-size: 36px;
       font-weight: 700;
-      color: var(--text-light);
+      color: #ffffff;
       margin-bottom: 12px;
     }
 
     .rules-subtitle {
       font-size: 14px;
-      color: var(--text-muted);
+      color: #cccccc;
       line-height: 1.6;
     }
 
     .rules-section {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-dark);
-      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #333333;
+      border-radius: 12px;
       padding: 24px;
       margin-bottom: 24px;
     }
@@ -55,7 +59,7 @@
     .section-title {
       font-size: 16px;
       font-weight: 600;
-      color: var(--text-light);
+      color: #ffffff;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
@@ -64,7 +68,7 @@
 
     .section-content {
       font-size: 13px;
-      color: var(--text-muted);
+      color: #cccccc;
       line-height: 1.8;
     }
 
@@ -75,7 +79,7 @@
 
     .rule-list li {
       padding: 8px 0;
-      color: var(--text-muted);
+      color: #cccccc;
       font-size: 13px;
       display: flex;
       gap: 8px;
@@ -90,23 +94,23 @@
 
     .rule-list.dont li::before {
       content: "✗";
-      color: var(--danger);
+      color: #ef4444;
     }
 
     .consequences {
-      background: rgba(239, 68, 68, 0.08);
-      border-left: 4px solid var(--danger);
+      background: rgba(239, 68, 68, 0.15);
+      border-left: 4px solid #ef4444;
       padding: 12px;
       border-radius: 4px;
       margin-top: 12px;
       font-size: 12px;
-      color: var(--text-muted);
+      color: #ff9999;
     }
 
     .back-link {
       display: inline-block;
       margin-bottom: 30px;
-      color: var(--accent-primary);
+      color: #06b6d4;
       text-decoration: none;
       font-size: 13px;
       font-weight: 500;
@@ -119,19 +123,31 @@
     .footer-rules {
       text-align: center;
       padding: 40px 20px;
-      border-top: 1px solid var(--border-dark);
+      border-top: 1px solid #333333;
       font-size: 12px;
-      color: var(--text-muted);
+      color: #999999;
     }
 
     .footer-rules a {
-      color: var(--accent-primary);
+      color: #06b6d4;
       text-decoration: none;
       margin: 0 8px;
     }
 
     .footer-rules a:hover {
       text-decoration: underline;
+    }
+
+    .rule-list li {
+      color: #cccccc;
+    }
+
+    .rule-list li.yes {
+      color: #4ade80;
+    }
+
+    .section-content p {
+      color: #cccccc;
     }
 
     @media (max-width: 600px) {
@@ -281,7 +297,7 @@
         What We Love to See
       </div>
       <div class="section-content">
-        <ul class="rule-list dont" style="list-style: none; padding: 0;">
+        <ul class="rule-list dont">
           <li style="color: #4ade80;">Share your projects and get feedback</li>
           <li style="color: #4ade80;">Help others solve problems</li>
           <li style="color: #4ade80;">Collaborate and make friends</li>
@@ -292,7 +308,7 @@
     </div>
 
     <!-- Enforcement -->
-    <div class="rules-section" style="border-left: 4px solid var(--accent-primary);">
+    <div class="rules-section" style="border-left: 4px solid #06b6d4;">
       <div class="section-title">
         <span class="rule-icon">⚖️</span>
         Enforcement & Appeals
@@ -302,20 +318,20 @@
           Our moderation team reviews reports and enforces rules fairly. We believe in second chances but take safety seriously.
         </p>
         <p>
-          <strong>If you think a moderation decision is unfair:</strong> Reply to the notification with your appeal within 7 days. We'll review it within 48 hours.
+          <strong style="color: #ffffff;">If you think a moderation decision is unfair:</strong> Reply to the notification with your appeal within 7 days. We'll review it within 48 hours.
         </p>
       </div>
     </div>
 
     <!-- Questions -->
-    <div class="rules-section" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2);">
+    <div class="rules-section" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3);">
       <div class="section-title">
         <span class="rule-icon">❓</span>
         Questions?
       </div>
       <div class="section-content">
         <p>
-          Check our FAQ or reach out in the <strong>Feedback & Help</strong> room. Our community managers are here to help!
+          Check our FAQ or reach out in the <strong style="color: #ffffff;">Feedback & Help</strong> room. Our community managers are here to help!
         </p>
       </div>
     </div>
