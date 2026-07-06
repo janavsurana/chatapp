@@ -172,9 +172,20 @@ app.post('/api/signup', async (req, res) => {
     const isAdmin = ADMIN_USERNAMES.includes(username.toLowerCase());
 
     const result = await pool.query(
-      'INSERT INTO users (username, password_hash, is_admin) VALUES ($1, $2, $3) RETURNING id, username, is_admin',
-      [username, passwordHash, isAdmin]
-    );
+  `INSERT INTO users
+  (username, password_hash, is_admin, display_name, bio, avatar_url)
+  VALUES ($1, $2, $3, $4, $5, $6)
+  RETURNING id, username, is_admin, display_name, bio, avatar_url`,
+  [
+    username,
+    passwordHash,
+    isAdmin,
+    username,      // default display name
+    '',            // empty bio
+    ''             // no avatar yet
+  ]
+);
+   
     const user = result.rows[0];
     const token = makeToken();
     const csrfToken = generateCSRFToken();
@@ -255,7 +266,41 @@ app.get('/api/rooms', requireAuth, async (req, res) => {
   const result = await pool.query('SELECT slug, name FROM rooms ORDER BY sort_order');
   res.json(result.rows);
 });
+app.get('/api/profile', requireAuth, (req, res) => {
+  res.json({
+    username: req.user.username,
+    display_name: req.user.display_name,
+    bio: req.user.bio,
+    avatar_url: req.user.avatar_url,
+    created_at: req.user.created_at
+  });
+});
 
+app.put('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const { display_name, bio, avatar_url } = req.body;
+
+    const result = await pool.query(
+      `UPDATE users
+       SET display_name = $1,
+           bio = $2,
+           avatar_url = $3
+       WHERE id = $4
+       RETURNING display_name, bio, avatar_url`,
+      [
+        (display_name || '').substring(0, 30),
+        (bio || '').substring(0, 250),
+        avatar_url || '',
+        req.user.id
+      ]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update profile.' });
+  }
+});
 // Socket.io chat
 io.use(async (socket, next) => {
   const token = socket.handshake.auth?.token;
@@ -280,7 +325,7 @@ io.on('connection', (socket) => {
     socket.emit('room_history', result.rows.reverse());
   });
 
-  socket.on('send_message', ({ roomSlug, content }) => {
+  socket.on('send_message', async ({ roomSlug, content }) => {
     try {
       content = (content || '').slice(0, 1000);
       if (!content) {
@@ -295,7 +340,7 @@ io.on('connection', (socket) => {
 
       // Rate limiting - prevent rapid messages
       const now = Date.now();
-      if ((lastMessageAt.get(user.id) || 0) < 1000) {
+      if ((now - (lastMessageAt.get(user.id) || 0) < 1000) {
         socket.emit('chat_error', 'Sending too fast.');
         return;
       }
