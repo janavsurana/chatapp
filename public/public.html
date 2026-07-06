@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+body{
+background:#111;
+color:white;
+font-family:Arial,sans-serif;
+margin:0;
+}
+
+.container{
+max-width:700px;
+margin:40px auto;
+padding:20px;
+}
+
+.card{
+background:#1d1d1d;
+padding:30px;
+border-radius:15px;
+text-align:center;
+}
+
+.avatar{
+width:120px;
+height:120px;
+border-radius:50%;
+background:#444;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:50px;
+margin:auto;
+}
+
+input,textarea{
+width:100%;
+padding:12px;
+margin-top:15px;
+background:#2a2a2a;
+color:white;
+border:none;
+border-radius:8px;
+}
+
+button{
+margin-top:20px;
+padding:12px 25px;
+background:#4CAF50;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:16px;
+}
+
+button:hover{
+background:#43a047;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<div class="avatar">👤</div>
+
+<h2 id="username">Loading...</h2>
+
+<input id="displayName" placeholder="Display Name">
+
+<textarea id="bio" placeholder="Write something about yourself"></textarea>
+
+<button onclick="saveProfile()">
+Save Profile
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+async function loadProfile(){
+
+const res=await fetch('/api/me');
+
+const user=await res.json();
+
+document.getElementById('username').innerText=user.username;
+
+}
+
+loadProfile();
+
+function saveProfile(){
+
+alert("Next step: Save to database.");
+
+}
+
+</script>
+
+</body>
+</html>
