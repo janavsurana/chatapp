@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Redirect to landing page on root
 app.get('/', (req, res) => {
-  res.redirect('/landing.html');
+  res.redirect('/index.html');
 });
 
 // Security headers
@@ -155,11 +155,11 @@ app.post('/api/signup', async (req, res) => {
       return res.status(400).json({ error: 'You must confirm you are 18 or older.' });
     }
 
-    if (validateUsername(username)) {
+    if (!validateUsername(username)) {
       return res.status(400).json({ error: 'Username: 3-20 chars, letters/numbers/underscore only.' });
     }
 
-    if (validatePassword(password)) {
+    if (!validatePassword(password)) {
       return res.status(400).json({ error: 'Password must be at least 8 characters.' });
     }
 
