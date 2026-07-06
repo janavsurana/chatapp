@@ -340,7 +340,7 @@ io.on('connection', (socket) => {
 
       // Rate limiting - prevent rapid messages
       const now = Date.now();
-      if ((now - (lastMessageAt.get(user.id) || 0) < 1000) {
+      if ((now - (lastMessageAt.get(user.id) || 0)) < 1000) {
         socket.emit('chat_error', 'Sending too fast.');
         return;
       }
