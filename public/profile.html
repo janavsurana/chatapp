@@ -9,60 +9,66 @@
 
 <style>
 body{
-background:#111;
-color:white;
-font-family:Arial,sans-serif;
-margin:0;
+    background:#111;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
 }
 
 .container{
-max-width:700px;
-margin:40px auto;
-padding:20px;
+    max-width:700px;
+    margin:40px auto;
+    padding:20px;
 }
 
 .card{
-background:#1d1d1d;
-padding:30px;
-border-radius:15px;
-text-align:center;
+    background:#1d1d1d;
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
 }
 
 .avatar{
-width:120px;
-height:120px;
-border-radius:50%;
-background:#444;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:50px;
-margin:auto;
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    background:#444;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:50px;
+    margin:auto;
 }
 
 input,textarea{
-width:100%;
-padding:12px;
-margin-top:15px;
-background:#2a2a2a;
-color:white;
-border:none;
-border-radius:8px;
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    background:#2a2a2a;
+    color:white;
+    border:none;
+    border-radius:8px;
+    box-sizing:border-box;
+}
+
+textarea{
+    min-height:120px;
+    resize:vertical;
 }
 
 button{
-margin-top:20px;
-padding:12px 25px;
-background:#4CAF50;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-size:16px;
+    margin-top:20px;
+    padding:12px 25px;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
 }
 
 button:hover{
-background:#43a047;
+    background:#43a047;
 }
 </style>
 
@@ -78,9 +84,14 @@ background:#43a047;
 
 <h2 id="username">Loading...</h2>
 
-<input id="displayName" placeholder="Display Name">
+<input
+id="displayName"
+type="text"
+placeholder="Display Name">
 
-<textarea id="bio" placeholder="Write something about yourself"></textarea>
+<textarea
+id="bio"
+placeholder="Write something about yourself"></textarea>
 
 <button onclick="saveProfile()">
 Save Profile
@@ -94,21 +105,56 @@ Save Profile
 
 async function loadProfile(){
 
-const res=await fetch('/api/me');
+    const token = localStorage.getItem("token");
 
-const user=await res.json();
+    if(!token){
+        alert("Please login first.");
+        window.location.href="/login.html";
+        return;
+    }
 
-document.getElementById('username').innerText=user.username;
+    try{
+
+        const res = await fetch("/api/me",{
+            headers:{
+                "x-auth-token":token
+            }
+        });
+
+        if(!res.ok){
+            localStorage.clear();
+            alert("Session expired. Please login again.");
+            window.location.href="/login.html";
+            return;
+        }
+
+        const user = await res.json();
+
+        document.getElementById("username").innerText =
+            user.username || "Unknown User";
+
+        document.getElementById("displayName").value =
+            user.displayName || "";
+
+        document.getElementById("bio").value =
+            user.bio || "";
+
+    }catch(err){
+
+        console.error(err);
+        alert("Unable to load profile.");
+
+    }
+
+}
+
+async function saveProfile(){
+
+    alert("Profile saving will be added in the next step.");
 
 }
 
 loadProfile();
-
-function saveProfile(){
-
-alert("Next step: Save to database.");
-
-}
 
 </script>
 
