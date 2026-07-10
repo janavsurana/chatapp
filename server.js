@@ -254,12 +254,51 @@ app.post('/api/logout', verifyCsrfToken, (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/me', requireAuth, (req, res) => {
-  res.json({
-    username: req.user.username,
-    isAdmin: req.user.is_admin,
-    csrfToken: csrfTokens.get(req.token)
-  });
+app.get('/api/me', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT username, display_name, bio, avatar, is_admin
+             FROM users
+             WHERE id = $1`,
+            [req.user.id]
+        );
+
+        const user = result.rows[0];
+
+        res.json({
+            username: user.username,
+            display_name: user.display_name,
+            bio: user.bio,
+            avatar: user.avatar,
+            isAdmin: user.is_admin,
+            csrfToken: csrfTokens.get(req.token)
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+app.post('/api/profile', requireAuth, verifyCsrfToken, async (req, res) => {
+    try {
+        const { display_name, bio, avatar } = req.body;
+
+        await pool.query(
+            `UPDATE users
+             SET display_name = $1,
+                 bio = $2,
+                 avatar = $3
+             WHERE id = $4`,
+            [display_name, bio, avatar, req.user.id]
+        );
+
+        res.json({ ok: true });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
+    }
 });
 
 app.get('/api/rooms', requireAuth, async (req, res) => {
